@@ -97,28 +97,42 @@ export function RegistrationModal({ isOpen, onClose, account, isConnected, onSuc
       return
     }
 
+    // Validate required fields
+    if (!formData.name || !formData.email) {
+      alert("Please fill in all required fields (Name and Email)")
+      return
+    }
+
     setLoading(true)
 
     try {
       // Simulate registration process
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
-      // In a real app, you would:
-      // 1. Store registration data in database
-      // 2. Possibly register on blockchain if needed
-      // 3. Send verification email
-      // 4. Create user profile
-
       const registrationData = {
         walletAddress: account,
         role: selectedRole,
-        ...formData,
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        businessName: formData.businessName,
+        businessType: formData.businessType,
+        licenseNumber: formData.licenseNumber,
+        description: formData.description,
+        location: formData.location,
         registeredAt: new Date().toISOString(),
       }
 
       // Store in localStorage for demo purposes
       const existingRegistrations = JSON.parse(localStorage.getItem("supplyChainRegistrations") || "[]")
-      const updatedRegistrations = existingRegistrations.filter((reg: any) => reg.walletAddress !== account)
+
+      // Remove any existing registration for this wallet address
+      const updatedRegistrations = existingRegistrations.filter(
+        (reg: any) => reg.walletAddress.toLowerCase() !== account.toLowerCase(),
+      )
+
+      // Add the new registration
       updatedRegistrations.push(registrationData)
       localStorage.setItem("supplyChainRegistrations", JSON.stringify(updatedRegistrations))
 
