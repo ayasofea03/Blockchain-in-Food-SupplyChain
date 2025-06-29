@@ -99,7 +99,7 @@ export function useContract(account: string | null, isConnected: boolean) {
       })
 
       if (network.chainId.toString() !== "1337") {
-        setError(`Wrong network! Please connect to Ganache (Chain ID: 5777). Currently on Chain ID: ${network.chainId}`)
+        setError(`Wrong network! Please connect to Ganache (Chain ID: 1337). Currently on Chain ID: ${network.chainId}`)
         return
       }
 
@@ -136,7 +136,7 @@ export function useContract(account: string | null, isConnected: boolean) {
     // Get participant info from localStorage (registration data)
     try {
       const registrations = JSON.parse(localStorage.getItem("supplyChainRegistrations") || "[]")
-      const participant = registrations.find((reg: any) => reg.walletAddress.toLowerCase() === address.toLowerCase())
+      const participant = registrations.find((reg: any) => reg.walletAddress?.toLowerCase() === address.toLowerCase())
 
       if (participant) {
         return {
@@ -197,6 +197,7 @@ export function useContract(account: string | null, isConnected: boolean) {
     setError("")
 
     try {
+      console.log("Refreshing items from contract...")
       console.log("Calling skuCount()...")
 
       const count = await contract.skuCount()
@@ -330,12 +331,11 @@ export function useContract(account: string | null, isConnected: boolean) {
         }
       }
 
+      console.log("Successfully fetched items:", itemsArray)
       setItems(itemsArray)
 
       // Load all participants from storage (not just from blockchain interactions)
       loadParticipantsFromStorage()
-
-      console.log("Successfully fetched items:", itemsArray)
     } catch (err: any) {
       console.error("Error refreshing items:", err)
 
@@ -351,11 +351,13 @@ export function useContract(account: string | null, isConnected: boolean) {
     }
   }, [contract, getParticipantInfo, loadParticipantsFromStorage])
 
+  // Auto-refresh items when contract is available
   useEffect(() => {
-    if (contract) {
+    if (contract && contractSetup) {
+      console.log("Contract setup complete, refreshing items...")
       refreshItems()
     }
-  }, [contract, refreshItems])
+  }, [contract, contractSetup, refreshItems])
 
   const testConnection = useCallback(async () => {
     if (!contract) {
